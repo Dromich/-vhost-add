@@ -5,17 +5,24 @@ if (( $EUID != 0 )); then
     exit
 fi
 
+if grep "#Include etc/extra/httpd-vhosts.conf"  /opt/lampp/etc/httpd.conf; then
+echo "Place before adding a new virtual host, you should uncomment(remove # symbol) on this line  \"Include etc/extra/httpd-vhosts.conf\" in the file    in /opt/lampp/etc/httpd.conf"
+exit
+fi
+
 read -p "Please enter a virtual domain name:" domain
-echo "Add new virtual domain: $domain"
+echo "Added new virtual domain: $domain"
 
 read -p "Use this directory as a DocumentRoot (tupe yes/no): " tDir
 case $tDir in
 "yes") myDir="$(pwd)";;
 "y") myDir="$(pwd)";;
-*) read -p "Enter DocumentRoot directory patch: " myDir;;
+*) read -p "Enter DocumentRoot directory patch for new host: " myDir;;
 esac
 
 echo "DocumentRoot directory patch: $myDir"
+
+echo "Adding host config in /opt/lampp/etc/extra/httpd-vhosts.conf  ...."
 
 echo "<VirtualHost 127.0.0.1:80>" >>/opt/lampp/etc/extra/httpd-vhosts.conf
 echo "	ServerAdmin admin@$domain" >>/opt/lampp/etc/extra/httpd-vhosts.conf
@@ -30,10 +37,14 @@ echo "	Require all granted" >>/opt/lampp/etc/extra/httpd-vhosts.conf
 echo "	</Directory>" >>/opt/lampp/etc/extra/httpd-vhosts.conf
 echo "</VirtualHost>" >>/opt/lampp/etc/extra/httpd-vhosts.conf
 
+echo "Adding host( $domain )  alias  to 127.0.0.1  /etc/hosts ....."
 if grep $domain  /etc/hosts; then
-echo "This domain was added in hosts earlier"
+echo "This domain was added in hosts file earlier"
 else
 echo "127.0.0.1 $domain" >>/etc/hosts
 fi
+
+echo "Xampp restarting....."
+pkexec env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY /opt/lampp/lampp restart
 
 echo "All done"
