@@ -20,7 +20,29 @@ case $tDir in
 *) read -p "Enter DocumentRoot directory patch for new host: " myDir;;
 esac
 
-echo "DocumentRoot directory patch: $myDir"
+read -p "Use sub directory in $myDir  as a DocumentRoot for your projekt (type yes/no): " tDir
+
+  case $tDir in
+  "yes"|"y")
+    subDirs=()
+    counter=1
+    echo "Choice sub dir:"
+    for dir in "$myDir"/*; do
+      if [ -d "$dir" ]; then
+        subDirs+=("$dir")
+        echo "$counter ${dir##*/}"
+        ((counter++))
+      fi
+    done
+    read -p "Enter your choice (number): " choice
+    selectedDir="${subDirs[$((choice-1))]}"
+   
+	myDir="$myDir/$selectedDir";;
+  *)
+    
+esac
+
+echo "Your domian $domain use  DocumentRoot  as  $myDir"
 
 echo "Adding host config in /opt/lampp/etc/extra/httpd-vhosts.conf  ...."
 
